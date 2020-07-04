@@ -20,9 +20,10 @@ def upgrade():
     op.create_table(
         'pull_requests',
         sa.Column('id', sa.Integer, primary_key=True),
-        sa.Column('created_at', sa.String(50)),
-        sa.Column('merged_at', sa.String(50)),
-        sa.Column('login', sa.String(50)),
+        sa.Column('repo', sa.String(50)),
+        sa.Column('created_at', sa.TIMESTAMP(50)),
+        sa.Column('merged_at', sa.TIMESTAMP(50)),
+        sa.Column('creator', sa.String(50)),
     )
 
 def downgrade():
