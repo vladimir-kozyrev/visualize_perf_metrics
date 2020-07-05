@@ -60,3 +60,4 @@ Next steps
 
 - add a script to copy data from Jira to the datastore
 - add SQL queries for each of the metrics
+- describe how these metrics can reflect on performance
