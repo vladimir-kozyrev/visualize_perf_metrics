@@ -1,6 +1,5 @@
 from github import Github
 from sqlalchemy import create_engine, sql
-from sqlalchemy.orm import sessionmaker
 from getpass import getpass
 import os
 import argparse
