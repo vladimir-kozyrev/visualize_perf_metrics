@@ -9,7 +9,7 @@ Uploading data to the database
 $ pip3 install pipenv
 $ pipenv install
 $ pipenv shell
-$ python3 github_prs_to_database.py yourgithuborg --repos repo1 repo2 --db "postgresql://user:password@host/db"
+$ python3 github.py yourgithuborg --repos repo1 repo2 --db "postgresql://user:password@host/db"
 ```
 
 Next steps
