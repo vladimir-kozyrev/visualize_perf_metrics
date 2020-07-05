@@ -4,9 +4,6 @@ from getpass import getpass
 import os
 import argparse
 
-import pprint
-pp = pprint.PrettyPrinter(indent=4)
-
 def parse_args():
     parser = argparse.ArgumentParser(description="Determines how many Confluence pages were created and edited by each user in a space")
     parser.add_argument("url", help="Confluence URL")
@@ -50,7 +47,6 @@ if __name__ == "__main__":
     pages = confluence.get_all_pages_from_space(args.space, expand="version", limit=999)
     for page in pages:
         process_page(page, contributors)
-    pp.pprint(contributors)
     engine = create_engine(args.db_conn_string, echo=True)
     conn = engine.connect()
     for person, contributions in contributors.items():
