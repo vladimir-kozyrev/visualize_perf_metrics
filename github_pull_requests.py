@@ -23,13 +23,22 @@ def process_repo(repo):
     for pull_request in pull_requests:
         if not pull_request.merged:
             continue
-        query = sql.text("""
-            INSERT INTO pull_requests (id, repo, created_at, merged_at, creator)
-            VALUES (:id, :repo, :created_at, :merged_at, :creator)
-        """,)
-        query = query.bindparams(id=pull_request.id, repo=repo.name, created_at=pull_request.created_at,
-                                 merged_at=pull_request.merged_at, creator=pull_request.user.login)
-        conn.execute(query)
+        select_query = sql.text("SELECT id FROM pull_requests WHERE id=:id")
+        select_query = select_query.bindparams(id=pull_request.id)
+        result = conn.execute(select_query).first()
+        if result:
+            upsert_query = sql.text("""
+                UPDATE pull_requests SET repo = :repo, created_at = :created_at, merged_at = :merged_at, creator = :creator
+                WHERE id = :id
+            """)
+        else:
+            upsert_query = sql.text("""
+                INSERT INTO pull_requests (id, repo, created_at, merged_at, creator)
+                VALUES (:id, :repo, :created_at, :merged_at, :creator)
+            """)
+        upsert_query = upsert_query.bindparams(id=pull_request.id, repo=repo.name, created_at=pull_request.created_at,
+                                               merged_at=pull_request.merged_at, creator=pull_request.user.login)
+        conn.execute(upsert_query)
 
 if __name__ == "__main__":
     args = parse_args()

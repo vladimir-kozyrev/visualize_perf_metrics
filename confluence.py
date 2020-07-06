@@ -50,9 +50,18 @@ if __name__ == "__main__":
     engine = create_engine(args.db_conn_string, echo=True)
     conn = engine.connect()
     for person, contributions in contributors.items():
-        query = sql.text("""
-            INSERT INTO confluence (person, contributions)
-            VALUES (:person, :contributions)
-        """)
-        query = query.bindparams(person=person, contributions=contributions)
-        conn.execute(query)
+        select_query = sql.text("SELECT person, contributions FROM confluence WHERE person=:person")
+        select_query = select_query.bindparams(person=person)
+        result = conn.execute(select_query).first()
+        if result:
+            upsert_query = sql.text("""
+                UPDATE confluence SET contributions = :contributions
+                WHERE person = :person
+            """)
+        else:
+            upsert_query = sql.text("""
+                INSERT INTO confluence (person, contributions)
+                VALUES (:person, :contributions)
+            """)
+        upsert_query = upsert_query.bindparams(person=person, contributions=contributions)
+        conn.execute(upsert_query)
