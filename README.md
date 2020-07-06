@@ -37,14 +37,14 @@ $ pip3 install pipenv
 $ pipenv install
 $ pipenv shell
 $ alembic upgrade head
-$ python3 github.py -h
+$ python3 github_pull_requests.py -h
 $ python3 confluence.py -h
 ```
 
 Gather data about GitHub pull requests and insert it into the database. You will be asked for the GitHub token. Optionally you can export `GITHUB_TOKEN` environment variable.
 
 ```shell
-$ python3 github.py mygithuborg --repos repo1 repo2 --db "postgresql://user:password@host/db"
+$ python3 github_pull_requests.py mygithuborg --repos repo1 repo2 --db "postgresql://user:password@host/db"
 ```
 
 Gather data about Confluence documentaion create/update actions in a given space. You will be asked for the password. Optionally you can export `CONFLUENCE_PASSWORD` environment variable.

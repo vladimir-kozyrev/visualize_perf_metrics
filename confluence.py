@@ -1,8 +1,8 @@
-from atlassian import Confluence
-from sqlalchemy import create_engine, sql
-from getpass import getpass
 import os
 import argparse
+from getpass import getpass
+from atlassian import Confluence
+from sqlalchemy import create_engine, sql
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Determines how many Confluence pages were created and edited by each user in a space")
@@ -10,7 +10,7 @@ def parse_args():
     parser.add_argument("space", help="Confluence space")
     parser.add_argument("username", help="Confluence username")
     parser.add_argument("--db", help="database connection string to which the stats will be written",
-        default="postgresql://user:password@localhost/app", dest="db_conn_string")
+                        default="postgresql://user:password@localhost/app", dest="db_conn_string")
     return parser.parse_args()
 
 def update_contributors(created_by, contributors):
