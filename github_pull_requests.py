@@ -1,16 +1,16 @@
-from github import Github
-from sqlalchemy import create_engine, sql
-from getpass import getpass
 import os
 import argparse
+from getpass import getpass
+from sqlalchemy import create_engine, sql
+from github import Github
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Collects statistics related to GitHub pull requests")
     parser.add_argument("org", help="GitHub organization")
     parser.add_argument("--repos", nargs='+', help="list of GitHub repos within the organization",
-        default="all", metavar="REPO"),
+                        default="all", metavar="REPO")
     parser.add_argument("--db", help="database connection string to which GitHub PR stats will be written",
-        default="postgresql://user:password@localhost/app", dest="db_conn_string")
+                        default="postgresql://user:password@localhost/app", dest="db_conn_string")
     return parser.parse_args()
 
 def get_repos(org, repos):
@@ -20,15 +20,15 @@ def get_repos(org, repos):
 
 def process_repo(repo):
     pull_requests = repo.get_pulls(state="closed")
-    for pr in pull_requests:
-        if pr.merged != True:
+    for pull_request in pull_requests:
+        if not pull_request.merged:
             continue
         query = sql.text("""
             INSERT INTO pull_requests (id, repo, created_at, merged_at, creator)
             VALUES (:id, :repo, :created_at, :merged_at, :creator)
         """,)
-        query = query.bindparams(id=pr.id, repo=repo.name, created_at=pr.created_at,
-            merged_at=pr.merged_at, creator=pr.user.login, )
+        query = query.bindparams(id=pull_request.id, repo=repo.name, created_at=pull_request.created_at,
+                                 merged_at=pull_request.merged_at, creator=pull_request.user.login)
         conn.execute(query)
 
 if __name__ == "__main__":
