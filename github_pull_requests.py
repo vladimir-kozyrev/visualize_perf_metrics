@@ -1,3 +1,8 @@
+"""
+This script collects data about GitHub pull requests
+and writes them to PostgreSQL database.
+"""
+
 import os
 import argparse
 from getpass import getpass
@@ -5,6 +10,9 @@ from sqlalchemy import create_engine, sql
 from github import Github
 
 def parse_args():
+    """
+    Parses arguments and returns them
+    """
     parser = argparse.ArgumentParser(description="Collects statistics related to GitHub pull requests")
     parser.add_argument("org", help="GitHub organization")
     parser.add_argument("--repos", nargs='+', help="list of GitHub repos within the organization",
@@ -13,13 +21,22 @@ def parse_args():
                         default="postgresql://user:password@localhost/app", dest="db_conn_string")
     return parser.parse_args()
 
-def get_repos(org, repos):
-    if repos == "all":
-        return org.get_repos()
-    return [org.get_repo(repo) for repo in repos]
+def get_repos(organization, repositories):
+    """
+    Returns a list of GitHub repos
+    :param organization: a GitHub organization
+    :param repositories: a list of repositories to get from the organization
+    """
+    if repositories == "all":
+        return organization.get_repos()
+    return [organization.get_repo(repo) for repo in repositories]
 
-def process_repo(repo):
-    pull_requests = repo.get_pulls(state="closed")
+def process_repo(repository):
+    """
+    Writes information about a repo to the database
+    :param repository: a GitHub repository
+    """
+    pull_requests = repository.get_pulls(state="closed")
     for pull_request in pull_requests:
         if not pull_request.merged:
             continue
@@ -36,7 +53,7 @@ def process_repo(repo):
                 INSERT INTO pull_requests (id, repo, created_at, merged_at, creator)
                 VALUES (:id, :repo, :created_at, :merged_at, :creator)
             """)
-        upsert_query = upsert_query.bindparams(id=pull_request.id, repo=repo.name, created_at=pull_request.created_at,
+        upsert_query = upsert_query.bindparams(id=pull_request.id, repo=repository.name, created_at=pull_request.created_at,
                                                merged_at=pull_request.merged_at, creator=pull_request.user.login)
         conn.execute(upsert_query)
 
