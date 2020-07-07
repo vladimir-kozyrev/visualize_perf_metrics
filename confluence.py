@@ -1,3 +1,8 @@
+"""
+This script collects data about Confluence page create and edit activities
+and writes them to PostgreSQL database.
+"""
+
 import os
 import argparse
 from getpass import getpass
@@ -5,6 +10,9 @@ from atlassian import Confluence
 from sqlalchemy import create_engine, sql
 
 def parse_args():
+    """
+    Parses arguments and return them
+    """
     parser = argparse.ArgumentParser(description="Determines how many Confluence pages were created and edited by each user in a space")
     parser.add_argument("url", help="Confluence URL")
     parser.add_argument("space", help="Confluence space")
@@ -13,24 +21,36 @@ def parse_args():
                         default="postgresql://user:password@localhost/app", dest="db_conn_string")
     return parser.parse_args()
 
-def update_contributors(created_by, contributors):
-    if contributors.get(created_by) is None:
-        contributors[created_by] = 1
+def increment_dict_value(a_dict, key):
+    """
+    Increments the value related to a given key by 1
+    :param key: a dictionary key
+    :param a_dict: a dictionary
+    """
+    if a_dict.get(key) is None:
+        a_dict[key] = 1
     else:
-        contributors[created_by] += 1
+        a_dict[key] += 1
 
-def process_page(page, contributors):
-    page_title = page["title"]
-    page_id = page["id"]
-    page_version = page["version"]["number"]
+def process_page(confluence_page, confluence_users):
+    """
+    Processes page by making a request to the Confluence API
+    :param confluence_page: a Confluence page
+    :param contributors: a dictionary of people who contributed to a Confluence space
+    """
+    page_title = confluence_page["title"]
+    page_id = confluence_page["id"]
+    page_version = confluence_page["version"]["number"]
     print(f"Processing '{page_title}' page. It's current version is {page_version}.")
     for version in range(page_version, 0, -1):
         if version == page_version:
-            update_contributors(page["version"]["by"]["displayName"], contributors)
+            confluence_user = confluence_page["version"]["by"]["displayName"]
+            increment_dict_value(confluence_users, confluence_user)
             continue
         # collect info about previous versions of the page if there are any
         prev_page_version = confluence.get_page_by_id(page_id, expand="version", version=version)
-        update_contributors(prev_page_version["version"]["by"]["displayName"], contributors)
+        confluence_user = prev_page_version["version"]["by"]["displayName"]
+        increment_dict_value(confluence_users, confluence_user)
 
 if __name__ == "__main__":
     args = parse_args()
